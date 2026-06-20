@@ -1,4 +1,4 @@
--- [[ KIRIK LUXURY HUB — FULL EDITION FOR DELTA ]] --
+-- [[ KIRIK LUXURY HUB — ULTRA CLEAN REWRITE ]] --
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -6,46 +6,53 @@ local Workspace = game:GetService("Workspace")
 local UserInputService = game:GetService("UserInputService")
 
 local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10) or LocalPlayer.PlayerGui
 
--- Создаем ScreenGui прямо в PlayerGui (чтобы не было черного экрана на Android)
+-- Защита от дубликатов: если скрипт уже запущен, он мягко закроет старый, чтобы не ломать игру
+if _G.KirikHubInstance then
+    _G.KirikHubInstance:Destroy()
+end
+
+-- Создаем ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "KirikLuxuryLabyrinth_Fixed"
+ScreenGui.Name = "KirikLuxuryLabyrinth_v2"
 ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true -- Чтобы интерфейс не съезжал на смартфонах
 ScreenGui.Parent = PlayerGui
+_G.KirikHubInstance = ScreenGui
 
 -- Главный фрейм (Меню)
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 320, 0, 180)
-MainFrame.Position = UDim2.new(0.5, -160, 0.4, -90)
-MainFrame.BackgroundColor3 = Color3.fromHex("#050505")
+MainFrame.Position = UDim2.new(0.5, -160, 0.5, -90)
+MainFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 5) -- Глубокий черный #050505
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
 
--- Скругление углов меню
+-- Скругление углов
 local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 10)
+MainCorner.CornerRadius = UDim.new(0, 12)
 MainCorner.Parent = MainFrame
 
--- Обводка с золотым градиентом
+-- Обводка (Золотисто-оранжевый градиент)
 local UIStroke = Instance.new("UIStroke")
 UIStroke.Thickness = 2
 UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke.Color = Color3.fromRGB(255, 255, 255)
 UIStroke.Parent = MainFrame
 
-local GradientStroke = Instance.new("UIGradient")
-GradientStroke.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 170, 0)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 85, 0))
+local UIGradient = Instance.new("UIGradient")
+UIGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 170, 0)), -- Чистое золото
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 85, 0))   -- Насыщенный оранжевый
 }
-GradientStroke.Parent = UIStroke
+UIGradient.Parent = UIStroke
 
--- Стильный заголовок
+-- Заголовок хаба
 local Title = Instance.new("TextLabel")
-Title.Name = "Title"
-Title.Size = UDim2.new(1, -40, 0, 40)
+Title.Size = UDim2.new(1, -45, 0, 45)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
 Title.Text = "KIRIK LUXURY HUB"
@@ -57,30 +64,20 @@ Title.Parent = MainFrame
 
 -- Кнопка закрытия (Крестик)
 local CloseButton = Instance.new("TextButton")
-CloseButton.Name = "CloseButton"
-CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -35, 0, 5)
+CloseButton.Size = UDim2.new(0, 35, 0, 35)
+CloseButton.Position = UDim2.new(1, -40, 0, 5)
 CloseButton.BackgroundTransparency = 1
 CloseButton.Text = "✕"
 CloseButton.TextColor3 = Color3.fromRGB(150, 150, 150)
 CloseButton.Font = Enum.Font.Inter
-CloseButton.TextSize = 18
+CloseButton.TextSize = 20
 CloseButton.Parent = MainFrame
 
--- Подсветка крестика при наведении/нажатии
-CloseButton.MouseEnter:Connect(function()
-    TweenService:Create(CloseButton, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 85, 85)}):Play()
-end)
-CloseButton.MouseLeave:Connect(function()
-    TweenService:Create(CloseButton, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(150, 150, 150)}):Play()
-end)
-
--- Основная кнопка Тоннеля / Прозрачности стен
+-- Главная кнопка мода (On/Off)
 local ToggleButton = Instance.new("TextButton")
-ToggleButton.Name = "ToggleButton"
 ToggleButton.Size = UDim2.new(0, 240, 0, 50)
-ToggleButton.Position = UDim2.new(0.5, -120, 0.5, -5)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+ToggleButton.Position = UDim2.new(0.5, -120, 0.5, 10)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 ToggleButton.Text = "WALLS: OFF"
 ToggleButton.TextColor3 = Color3.fromRGB(255, 85, 0)
 ToggleButton.Font = Enum.Font.Inter
@@ -93,53 +90,55 @@ ButtonCorner.Parent = ToggleButton
 
 local ButtonStroke = Instance.new("UIStroke")
 ButtonStroke.Thickness = 1
-ButtonStroke.Color = Color3.fromRGB(50, 50, 50)
+ButtonStroke.Color = Color3.fromRGB(60, 60, 60)
 ButtonStroke.Parent = ToggleButton
 
--- [[ УЛУЧШЕННОЕ СЕНСОРНОЕ ПЕРЕТАСКИВАНИЕ ДЛЯ СМАРТФОНОВ ]] --
-local dragging, dragInput, dragStart, startPos
-
-local function update(input)
-    local delta = input.Position - dragStart
-    MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-end
+-- [[ БЕЗОПАСНЫЙ ДРАГ-СКРИПТ ДЛЯ СЕНСОРНЫХ ЭКРАНОВ ]] --
+local dragToggle = false
+local dragStart = nil
+local startPos = nil
 
 MainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
+        dragToggle = true
         dragStart = input.Position
         startPos = MainFrame.Position
+        
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
+                dragToggle = false
             end
         end)
     end
 end)
 
-MainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
 UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        update(input)
+    if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragToggle then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
 
--- [[ УМНАЯ ЛОГИКА ПРОЗРАЧНОСТИ СТЕН ]] --
+-- [[ ИСПРАВЛЕННАЯ ЛОГИКА ПРОЗРАЧНОСТИ И СТЕН ]] --
 local wallsEnabled = false
 local originalStates = {}
 
+-- Проверка, чтобы случайно не удалить пол под ногами
+local function isFloorOrPlayer(obj)
+    local name = obj.Name:lower()
+    if name:find("baseplate") or name:find("floor") or name:find("ground") or name:find("spawn") then
+        return true
+    end
+    -- Игнорируем элементы персонажей игроков
+    if obj:FindFirstAncestorOfClass("Model") and obj:FindFirstAncestorOfClass("Model"):FindFirstChild("Humanoid") then
+        return true
+    end
+    return false
+end
+
 local function ModifyWall(obj)
-    if obj:IsA("BasePart") and not obj:IsA("Terrain") then
-        -- Игнорируем пол, спавны и самих игроков, чтобы не упасть в бездну
-        if obj.Name == "Baseplate" or obj.Name == "SpawnLocation" or obj.Name == "Floor" then return end
-        if obj:FindFirstAncestorOfClass("Model") and obj:FindFirstAncestorOfClass("Model"):FindFirstChild("Humanoid") then return end
-        
-        -- Кэшируем первоначальные настройки стен
+    if obj:IsA("BasePart") and not obj:IsA("Terrain") and not isFloorOrPlayer(obj) then
+        -- Запоминаем дефолтное состояние стены
         if not originalStates[obj] then
             originalStates[obj] = {
                 Transparency = obj.Transparency,
@@ -148,8 +147,8 @@ local function ModifyWall(obj)
         end
         
         if wallsEnabled then
-            obj.Transparency = 0.7  -- Делаем прозрачными на 70%
-            obj.CanCollide = false  -- Отключаем коллизию (ходим насквозь)
+            obj.Transparency = 0.7 -- Делаем прозрачной
+            obj.CanCollide = false -- Отключаем коллизию (проход насквозь)
         else
             local state = originalStates[obj]
             if state then
@@ -166,7 +165,7 @@ local function ToggleWalls()
     end
 end
 
--- Обработка клика по кнопке
+-- Клик по кнопке переключения
 ToggleButton.MouseButton1Click:Connect(function()
     wallsEnabled = not wallsEnabled
     
@@ -177,22 +176,32 @@ ToggleButton.MouseButton1Click:Connect(function()
     else
         ToggleButton.Text = "WALLS: OFF"
         TweenService:Create(ToggleButton, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 85, 0)}):Play()
-        TweenService:Create(ButtonStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(50, 50, 50)}):Play()
+        TweenService:Create(ButtonStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(60, 60, 60)}):Play()
     end
     ToggleWalls()
 end)
 
--- Следим за динамически прогружаемыми частями лабиринта
-Workspace.DescendantAdded:Connect(function(descendant)
+-- Слежка за динамически создающимися стенами лабиринта
+local connection = Workspace.DescendantAdded:Connect(function(descendant)
     if wallsEnabled then
-        task.wait(0.1)
+        task.wait(0.2) -- Небольшая пауза, чтобы объект успел инициализироваться в игре
         ModifyWall(descendant)
     end
 end)
 
--- Безопасное закрытие хаба с возвращением карты в норму
+-- Клик по крестику (Закрытие)
 CloseButton.MouseButton1Click:Connect(function()
+    if connection then connection:Disconnect() end
     wallsEnabled = false
-    ToggleWalls()
+    
+    -- Возвращаем карте первоначальный вид перед удалением GUI
+    for obj, state in pairs(originalStates) do
+        if obj and obj.Parent then
+            obj.Transparency = state.Transparency
+            obj.CanCollide = state.CanCollide
+        end
+    end
+    
+    _G.KirikHubInstance = nil
     ScreenGui:Destroy()
 end)
