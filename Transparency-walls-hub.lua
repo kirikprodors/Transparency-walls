@@ -1,4 +1,4 @@
--- [[ KIRIK LUXURY HUB — ULTRA CLEAN REWRITE ]] --
+-- [[ KIRIK LUXURY HUB — ULTRA CLEAN FIXED ]] --
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -8,7 +8,7 @@ local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10) or LocalPlayer.PlayerGui
 
--- Защита от дубликатов: если скрипт уже запущен, он мягко закроет старый, чтобы не ломать игру
+-- Защита от дубликатов
 if _G.KirikHubInstance then
     _G.KirikHubInstance:Destroy()
 end
@@ -17,7 +17,7 @@ end
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "KirikLuxuryLabyrinth_v2"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.IgnoreGuiInset = true -- Чтобы интерфейс не съезжал на смартфонах
+ScreenGui.IgnoreGuiInset = true
 ScreenGui.Parent = PlayerGui
 _G.KirikHubInstance = ScreenGui
 
@@ -26,7 +26,7 @@ local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 320, 0, 180)
 MainFrame.Position = UDim2.new(0.5, -160, 0.5, -90)
-MainFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 5) -- Глубокий черный #050505
+MainFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 5) -- #050505
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
@@ -45,8 +45,8 @@ UIStroke.Parent = MainFrame
 
 local UIGradient = Instance.new("UIGradient")
 UIGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 170, 0)), -- Чистое золото
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 85, 0))   -- Насыщенный оранжевый
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 170, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 85, 0))
 }
 UIGradient.Parent = UIStroke
 
@@ -57,7 +57,7 @@ Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
 Title.Text = "KIRIK LUXURY HUB"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.Inter
+Title.Font = Enum.Font.SourceSans -- Фикс ошибки
 Title.TextSize = 18
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = MainFrame
@@ -69,7 +69,7 @@ CloseButton.Position = UDim2.new(1, -40, 0, 5)
 CloseButton.BackgroundTransparency = 1
 CloseButton.Text = "✕"
 CloseButton.TextColor3 = Color3.fromRGB(150, 150, 150)
-CloseButton.Font = Enum.Font.Inter
+CloseButton.Font = Enum.Font.SourceSans -- Фикс ошибки
 CloseButton.TextSize = 20
 CloseButton.Parent = MainFrame
 
@@ -80,7 +80,7 @@ ToggleButton.Position = UDim2.new(0.5, -120, 0.5, 10)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 ToggleButton.Text = "WALLS: OFF"
 ToggleButton.TextColor3 = Color3.fromRGB(255, 85, 0)
-ToggleButton.Font = Enum.Font.Inter
+ToggleButton.Font = Enum.Font.SourceSans -- Фикс ошибки
 ToggleButton.TextSize = 16
 ToggleButton.Parent = MainFrame
 
@@ -119,17 +119,15 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- [[ ИСПРАВЛЕННАЯ ЛОГИКА ПРОЗРАЧНОСТИ И СТЕН ]] --
+-- [[ ЛОГИКА ПРОЗРАЧНОСТИ СТЕН ]] --
 local wallsEnabled = false
 local originalStates = {}
 
--- Проверка, чтобы случайно не удалить пол под ногами
 local function isFloorOrPlayer(obj)
     local name = obj.Name:lower()
     if name:find("baseplate") or name:find("floor") or name:find("ground") or name:find("spawn") then
         return true
     end
-    -- Игнорируем элементы персонажей игроков
     if obj:FindFirstAncestorOfClass("Model") and obj:FindFirstAncestorOfClass("Model"):FindFirstChild("Humanoid") then
         return true
     end
@@ -138,7 +136,6 @@ end
 
 local function ModifyWall(obj)
     if obj:IsA("BasePart") and not obj:IsA("Terrain") and not isFloorOrPlayer(obj) then
-        -- Запоминаем дефолтное состояние стены
         if not originalStates[obj] then
             originalStates[obj] = {
                 Transparency = obj.Transparency,
@@ -147,8 +144,8 @@ local function ModifyWall(obj)
         end
         
         if wallsEnabled then
-            obj.Transparency = 0.7 -- Делаем прозрачной
-            obj.CanCollide = false -- Отключаем коллизию (проход насквозь)
+            obj.Transparency = 0.7
+            obj.CanCollide = false
         else
             local state = originalStates[obj]
             if state then
@@ -165,7 +162,6 @@ local function ToggleWalls()
     end
 end
 
--- Клик по кнопке переключения
 ToggleButton.MouseButton1Click:Connect(function()
     wallsEnabled = not wallsEnabled
     
@@ -181,20 +177,17 @@ ToggleButton.MouseButton1Click:Connect(function()
     ToggleWalls()
 end)
 
--- Слежка за динамически создающимися стенами лабиринта
 local connection = Workspace.DescendantAdded:Connect(function(descendant)
     if wallsEnabled then
-        task.wait(0.2) -- Небольшая пауза, чтобы объект успел инициализироваться в игре
+        task.wait(0.2)
         ModifyWall(descendant)
     end
 end)
 
--- Клик по крестику (Закрытие)
 CloseButton.MouseButton1Click:Connect(function()
     if connection then connection:Disconnect() end
     wallsEnabled = false
     
-    -- Возвращаем карте первоначальный вид перед удалением GUI
     for obj, state in pairs(originalStates) do
         if obj and obj.Parent then
             obj.Transparency = state.Transparency
